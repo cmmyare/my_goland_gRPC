@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package invoicer;
+
+option go_package = "github.com/cmmyare24/go-gRPC/invoicer;invoicer";
+
+message Amount {
+    int64 amount = 1;
+    string currence = 2;
+}
+
+message CreateRequest {
+    Amount amount = 1;
+    string from = 2;
+    string to = 3;
+    string description = 4;
+}
+
+message CreateResponse {
+    Amount amount = 1;
+    string to = 2;
+    string from = 3;
+    string description = 4;
+    
+}
+message UpdateRequest {
+  string id = 1;
+  Amount amount = 2;
+  string from = 3;
+  string to = 4;
+  string description = 5;
+}
+
+message UpdateResponse {
+  bool success = 1;
+}
+
+message DeleteRequest {
+  string id = 1;
+}
+
+message DeleteResponse {
+  bool success = 1;
+}
+
+
+service Invoicer {
+    rpc Create (CreateRequest) returns (CreateResponse);
+    rpc Update (UpdateRequest) returns (UpdateResponse);
+}
+
