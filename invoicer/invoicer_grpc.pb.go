@@ -19,8 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Invoicer_Create_FullMethodName = "/invoicer.Invoicer/Create"
-	Invoicer_Update_FullMethodName = "/invoicer.Invoicer/Update"
+	Invoicer_Create_FullMethodName           = "/invoicer.Invoicer/Create"
+	Invoicer_Update_FullMethodName           = "/invoicer.Invoicer/Update"
+	Invoicer_StreamInvoices_FullMethodName   = "/invoicer.Invoicer/StreamInvoices"
+	Invoicer_GetInvoiceStream_FullMethodName = "/invoicer.Invoicer/GetInvoiceStream"
+	Invoicer_ChatStream_FullMethodName       = "/invoicer.Invoicer/ChatStream"
 )
 
 // InvoicerClient is the client API for Invoicer service.
@@ -29,6 +32,10 @@ const (
 type InvoicerClient interface {
 	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
 	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateResponse, error)
+	// streaming
+	StreamInvoices(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[CreateRequest, StreamResponse], error)
+	GetInvoiceStream(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CreateResponse], error)
+	ChatStream(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[CreateRequest, CreateResponse], error)
 }
 
 type invoicerClient struct {
@@ -59,12 +66,61 @@ func (c *invoicerClient) Update(ctx context.Context, in *UpdateRequest, opts ...
 	return out, nil
 }
 
+func (c *invoicerClient) StreamInvoices(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[CreateRequest, StreamResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Invoicer_ServiceDesc.Streams[0], Invoicer_StreamInvoices_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[CreateRequest, StreamResponse]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Invoicer_StreamInvoicesClient = grpc.ClientStreamingClient[CreateRequest, StreamResponse]
+
+func (c *invoicerClient) GetInvoiceStream(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CreateResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Invoicer_ServiceDesc.Streams[1], Invoicer_GetInvoiceStream_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[CreateRequest, CreateResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Invoicer_GetInvoiceStreamClient = grpc.ServerStreamingClient[CreateResponse]
+
+func (c *invoicerClient) ChatStream(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[CreateRequest, CreateResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Invoicer_ServiceDesc.Streams[2], Invoicer_ChatStream_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[CreateRequest, CreateResponse]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Invoicer_ChatStreamClient = grpc.BidiStreamingClient[CreateRequest, CreateResponse]
+
 // InvoicerServer is the server API for Invoicer service.
 // All implementations must embed UnimplementedInvoicerServer
 // for forward compatibility.
 type InvoicerServer interface {
 	Create(context.Context, *CreateRequest) (*CreateResponse, error)
 	Update(context.Context, *UpdateRequest) (*UpdateResponse, error)
+	// streaming
+	StreamInvoices(grpc.ClientStreamingServer[CreateRequest, StreamResponse]) error
+	GetInvoiceStream(*CreateRequest, grpc.ServerStreamingServer[CreateResponse]) error
+	ChatStream(grpc.BidiStreamingServer[CreateRequest, CreateResponse]) error
 	mustEmbedUnimplementedInvoicerServer()
 }
 
@@ -80,6 +136,15 @@ func (UnimplementedInvoicerServer) Create(context.Context, *CreateRequest) (*Cre
 }
 func (UnimplementedInvoicerServer) Update(context.Context, *UpdateRequest) (*UpdateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (UnimplementedInvoicerServer) StreamInvoices(grpc.ClientStreamingServer[CreateRequest, StreamResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method StreamInvoices not implemented")
+}
+func (UnimplementedInvoicerServer) GetInvoiceStream(*CreateRequest, grpc.ServerStreamingServer[CreateResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method GetInvoiceStream not implemented")
+}
+func (UnimplementedInvoicerServer) ChatStream(grpc.BidiStreamingServer[CreateRequest, CreateResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method ChatStream not implemented")
 }
 func (UnimplementedInvoicerServer) mustEmbedUnimplementedInvoicerServer() {}
 func (UnimplementedInvoicerServer) testEmbeddedByValue()                  {}
@@ -138,6 +203,31 @@ func _Invoicer_Update_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Invoicer_StreamInvoices_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(InvoicerServer).StreamInvoices(&grpc.GenericServerStream[CreateRequest, StreamResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Invoicer_StreamInvoicesServer = grpc.ClientStreamingServer[CreateRequest, StreamResponse]
+
+func _Invoicer_GetInvoiceStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(CreateRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(InvoicerServer).GetInvoiceStream(m, &grpc.GenericServerStream[CreateRequest, CreateResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Invoicer_GetInvoiceStreamServer = grpc.ServerStreamingServer[CreateResponse]
+
+func _Invoicer_ChatStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(InvoicerServer).ChatStream(&grpc.GenericServerStream[CreateRequest, CreateResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Invoicer_ChatStreamServer = grpc.BidiStreamingServer[CreateRequest, CreateResponse]
+
 // Invoicer_ServiceDesc is the grpc.ServiceDesc for Invoicer service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -154,6 +244,23 @@ var Invoicer_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Invoicer_Update_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "StreamInvoices",
+			Handler:       _Invoicer_StreamInvoices_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "GetInvoiceStream",
+			Handler:       _Invoicer_GetInvoiceStream_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "ChatStream",
+			Handler:       _Invoicer_ChatStream_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "invoicer.proto",
 }

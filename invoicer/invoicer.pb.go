@@ -417,6 +417,50 @@ func (x *DeleteResponse) GetSuccess() bool {
 	return false
 }
 
+type StreamResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StreamResponse) Reset() {
+	*x = StreamResponse{}
+	mi := &file_invoicer_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StreamResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StreamResponse) ProtoMessage() {}
+
+func (x *StreamResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_invoicer_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StreamResponse.ProtoReflect.Descriptor instead.
+func (*StreamResponse) Descriptor() ([]byte, []int) {
+	return file_invoicer_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *StreamResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 var File_invoicer_proto protoreflect.FileDescriptor
 
 const file_invoicer_proto_rawDesc = "" +
@@ -446,10 +490,16 @@ const file_invoicer_proto_rawDesc = "" +
 	"\rDeleteRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"*\n" +
 	"\x0eDeleteResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\x84\x01\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"*\n" +
+	"\x0eStreamResponse\x12\x18\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage2\xd9\x02\n" +
 	"\bInvoicer\x12;\n" +
 	"\x06Create\x12\x17.invoicer.CreateRequest\x1a\x18.invoicer.CreateResponse\x12;\n" +
-	"\x06Update\x12\x17.invoicer.UpdateRequest\x1a\x18.invoicer.UpdateResponseB0Z.github.com/cmmyare24/go-gRPC/invoicer;invoicerb\x06proto3"
+	"\x06Update\x12\x17.invoicer.UpdateRequest\x1a\x18.invoicer.UpdateResponse\x12E\n" +
+	"\x0eStreamInvoices\x12\x17.invoicer.CreateRequest\x1a\x18.invoicer.StreamResponse(\x01\x12G\n" +
+	"\x10GetInvoiceStream\x12\x17.invoicer.CreateRequest\x1a\x18.invoicer.CreateResponse0\x01\x12C\n" +
+	"\n" +
+	"ChatStream\x12\x17.invoicer.CreateRequest\x1a\x18.invoicer.CreateResponse(\x010\x01B0Z.github.com/cmmyare24/go-gRPC/invoicer;invoicerb\x06proto3"
 
 var (
 	file_invoicer_proto_rawDescOnce sync.Once
@@ -463,7 +513,7 @@ func file_invoicer_proto_rawDescGZIP() []byte {
 	return file_invoicer_proto_rawDescData
 }
 
-var file_invoicer_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_invoicer_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_invoicer_proto_goTypes = []any{
 	(*Amount)(nil),         // 0: invoicer.Amount
 	(*CreateRequest)(nil),  // 1: invoicer.CreateRequest
@@ -472,6 +522,7 @@ var file_invoicer_proto_goTypes = []any{
 	(*UpdateResponse)(nil), // 4: invoicer.UpdateResponse
 	(*DeleteRequest)(nil),  // 5: invoicer.DeleteRequest
 	(*DeleteResponse)(nil), // 6: invoicer.DeleteResponse
+	(*StreamResponse)(nil), // 7: invoicer.StreamResponse
 }
 var file_invoicer_proto_depIdxs = []int32{
 	0, // 0: invoicer.CreateRequest.amount:type_name -> invoicer.Amount
@@ -479,10 +530,16 @@ var file_invoicer_proto_depIdxs = []int32{
 	0, // 2: invoicer.UpdateRequest.amount:type_name -> invoicer.Amount
 	1, // 3: invoicer.Invoicer.Create:input_type -> invoicer.CreateRequest
 	3, // 4: invoicer.Invoicer.Update:input_type -> invoicer.UpdateRequest
-	2, // 5: invoicer.Invoicer.Create:output_type -> invoicer.CreateResponse
-	4, // 6: invoicer.Invoicer.Update:output_type -> invoicer.UpdateResponse
-	5, // [5:7] is the sub-list for method output_type
-	3, // [3:5] is the sub-list for method input_type
+	1, // 5: invoicer.Invoicer.StreamInvoices:input_type -> invoicer.CreateRequest
+	1, // 6: invoicer.Invoicer.GetInvoiceStream:input_type -> invoicer.CreateRequest
+	1, // 7: invoicer.Invoicer.ChatStream:input_type -> invoicer.CreateRequest
+	2, // 8: invoicer.Invoicer.Create:output_type -> invoicer.CreateResponse
+	4, // 9: invoicer.Invoicer.Update:output_type -> invoicer.UpdateResponse
+	7, // 10: invoicer.Invoicer.StreamInvoices:output_type -> invoicer.StreamResponse
+	2, // 11: invoicer.Invoicer.GetInvoiceStream:output_type -> invoicer.CreateResponse
+	2, // 12: invoicer.Invoicer.ChatStream:output_type -> invoicer.CreateResponse
+	8, // [8:13] is the sub-list for method output_type
+	3, // [3:8] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name
 	3, // [3:3] is the sub-list for extension extendee
 	0, // [0:3] is the sub-list for field type_name
@@ -499,7 +556,7 @@ func file_invoicer_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_invoicer_proto_rawDesc), len(file_invoicer_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

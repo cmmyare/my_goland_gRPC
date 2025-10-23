@@ -42,10 +42,19 @@ message DeleteRequest {
 message DeleteResponse {
   bool success = 1;
 }
+message StreamResponse {
+    string message = 1;
+}
 
 
 service Invoicer {
     rpc Create (CreateRequest) returns (CreateResponse);
     rpc Update (UpdateRequest) returns (UpdateResponse);
+    
+
+       //  streaming
+    rpc StreamInvoices (stream CreateRequest) returns (StreamResponse); // client streaming
+    rpc GetInvoiceStream (CreateRequest) returns (stream CreateResponse); // server streaming
+    rpc ChatStream (stream CreateRequest) returns (stream CreateResponse); // bidirectional
 }
 
