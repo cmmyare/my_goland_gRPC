@@ -71,3 +71,76 @@ func (s *InvoicerServer) GetInvoiceStream(req *invoicer.CreateRequest, stream in
 	return nil
 }
 
+// static implementation of bidirectional streaming
+// func (s *InvoicerServer) ChatStream(stream invoicer.Invoicer_ChatStreamServer) error {
+//     fmt.Println("Bidirectional streaming started...")
+
+//     for {
+//         req, err := stream.Recv()
+//         if err == io.EOF {
+//             fmt.Println("Client closed stream")
+//             return nil
+//         }
+//         if err != nil {
+//             fmt.Printf("Error receiving from client: %v\n", err)
+//             return err
+//         }
+
+//         // Print received invoice
+//         fmt.Printf("Received from client: From=%s To=%s Amount=%d\n", req.From, req.To, req.Amount.Amount)
+
+//         // Simulate server processing and send a response
+//         resp := &invoicer.CreateResponse{
+//             From:        "Server",
+//             To:          req.From,
+//             Description: fmt.Sprintf("Invoice from %s processed successfully!", req.From),
+//             Amount:      req.Amount,
+//         }
+
+//         // Send message back to client
+//         if err := stream.Send(resp); err != nil {
+//             fmt.Printf("Error sending to client: %v\n", err)
+//             return err
+//         }
+
+//         // Optional: slow down to simulate processing
+//         time.Sleep(time.Second)
+//     }
+// }
+
+// dynamic implementation of bidirectional streaming
+
+
+func (s *InvoicerServer) ChatStream(stream invoicer.Invoicer_ChatStreamServer) error {
+	fmt.Println("🔁 Bidirectional ChatStream started")
+
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			fmt.Println("❌ Client closed the stream")
+			return nil
+		}
+		if err != nil {
+			fmt.Printf("⚠️  Error receiving: %v\n", err)
+			return err
+		}
+
+		fmt.Printf("📥 Server received: From=%s → To=%s | %s | %d %s\n",
+			req.From, req.To, req.Description, req.Amount.Amount, req.Amount.Currence)
+
+		// Build a simple response back to client
+		resp := &invoicer.CreateResponse{
+			From:        "Server",
+			To:          req.From,
+			Description: fmt.Sprintf("Received invoice '%s' OK", req.Description),
+			Amount:      req.Amount,
+		}
+
+		// Send response immediately
+		if err := stream.Send(resp); err != nil {
+			fmt.Printf("⚠️  Error sending: %v\n", err)
+			return err
+		}
+	}
+}
+
